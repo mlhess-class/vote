@@ -16,8 +16,9 @@ def index():
 @app.route("/add", methods=["POST"])
 def add_option():
     name = request.form.get("name", "").strip()
+    username = request.form.get("username", "").strip()
     if name and not any(o["name"].lower() == name.lower() for o in options):
-        options.append({"name": name, "votes": 0})
+        options.append({"name": name, "votes": 0, "added_by": username or "Anonymous"})
     return redirect(url_for("index"))
 
 

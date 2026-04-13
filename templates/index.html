@@ -28,6 +28,7 @@
     <h1>Vote</h1>
 
     <form class="add-form" action="/add" method="post">
+        <input type="text" name="username" placeholder="Your name..." required>
         <input type="text" name="name" placeholder="Add an option..." required>
         <button type="submit" class="btn-add">Add</button>
     </form>
@@ -35,7 +36,7 @@
     {% if options %}
         {% for opt in options %}
         <div class="option">
-            <span class="name">{{ opt.name }}</span>
+            <span class="name">{{ opt.name }} <small style="color:#888; font-weight:normal;">(by {{ opt.added_by }})</small></span>
             <div class="bar-bg">
                 <div class="bar-fill" style="width: {{ (opt.votes / total * 100) if total else 0 }}%"></div>
             </div>
