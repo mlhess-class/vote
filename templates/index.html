@@ -5,56 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vote</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        /* UMich Brand Colors
+           Primary:  Maize #FFCB05, Blue #00274C
+           Secondary: Tappan Red #9A3324, Ross Orange #D86018,
+                      Arboretum Blue #2F65A7, Taubman Teal #00B2A9
+        */
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            background: #0f0f1a;
-            background-image:
-                radial-gradient(ellipse at 20% 50%, rgba(88, 28, 235, 0.15) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
-            color: #e2e8f0;
-            padding: 2rem 1rem;
+            background: #f5f5f0;
+            color: #00274C;
+            line-height: 1.5;
+        }
+
+        .topbar {
+            background: #00274C;
+            padding: 0.75rem 1.5rem;
             display: flex;
-            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .topbar-title {
+            color: #FFCB05;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
         .container {
             width: 100%;
             max-width: 640px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
+        h1 {
+            font-size: 1.75rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #a78bfa, #6366f1, #10b981);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.02em;
+            color: #00274C;
+            margin-bottom: 0.25rem;
         }
 
-        .header p {
-            color: #64748b;
-            margin-top: 0.4rem;
+        .subtitle {
+            color: #555;
             font-size: 0.95rem;
+            margin-bottom: 1.75rem;
         }
 
+        /* --- Add Form --- */
         .card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 1.5rem;
-            backdrop-filter: blur(12px);
-            margin-bottom: 1.5rem;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #00274C;
+            margin-bottom: 0.75rem;
         }
 
         .add-form {
@@ -66,88 +82,95 @@
         .add-form input {
             flex: 1;
             min-width: 120px;
-            padding: 0.7rem 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            padding: 0.6rem 0.75rem;
+            border: 2px solid #ccc;
+            border-radius: 6px;
             font-size: 0.95rem;
             font-family: inherit;
-            background: rgba(255, 255, 255, 0.05);
-            color: #e2e8f0;
+            color: #00274C;
+            background: #fff;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.15s;
         }
 
-        .add-form input::placeholder { color: #475569; }
+        .add-form input::placeholder { color: #888; }
 
         .add-form input:focus {
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            border-color: #00274C;
+            box-shadow: 0 0 0 2px rgba(0, 39, 76, 0.15);
         }
 
         button {
-            padding: 0.7rem 1.4rem;
+            padding: 0.6rem 1.25rem;
             border: none;
-            border-radius: 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: 600;
             font-family: inherit;
-            transition: all 0.2s;
+            transition: background-color 0.15s;
+        }
+
+        button:focus-visible {
+            outline: 3px solid #FFCB05;
+            outline-offset: 2px;
         }
 
         .btn-add {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: #00274C;
             color: #fff;
-            box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
         }
 
-        .btn-add:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-        }
+        .btn-add:hover { background: #003566; }
 
         .btn-vote {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            padding: 0.45rem 0.9rem;
-            font-size: 0.8rem;
+            background: #FFCB05;
+            color: #00274C;
+            padding: 0.4rem 0.85rem;
+            font-size: 0.85rem;
         }
 
-        .btn-vote:hover {
-            background: rgba(16, 185, 129, 0.25);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 12px rgba(16, 185, 129, 0.2);
+        .btn-vote:hover { background: #e6b800; }
+
+        /* --- Options List --- */
+        .options-header {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+            margin-bottom: 0.5rem;
         }
 
         .option {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 1rem 1.2rem;
-            border-radius: 12px;
-            margin-bottom: 0.6rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        .option:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: #fff;
+            padding: 0.85rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
         }
 
         .rank {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            color: #475569;
-            min-width: 1.5rem;
-            text-align: center;
+            color: #00274C;
+            background: #FFCB05;
+            width: 1.75rem;
+            height: 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
 
-        .rank.gold { color: #fbbf24; }
-        .rank.silver { color: #94a3b8; }
-        .rank.bronze { color: #d97706; }
+        .rank.plain {
+            background: #e8e8e4;
+            color: #666;
+        }
 
         .option-info {
             flex: 1;
@@ -163,61 +186,53 @@
         }
 
         .option-by {
-            color: #475569;
-            font-size: 0.78rem;
-            margin-top: 0.15rem;
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 0.1rem;
         }
 
         .bar-bg {
             flex: 2;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 6px;
-            height: 8px;
+            background: #e8e8e4;
+            border-radius: 4px;
+            height: 10px;
             overflow: hidden;
         }
 
         .bar-fill {
             height: 100%;
-            border-radius: 6px;
-            background: linear-gradient(90deg, #6366f1, #a78bfa);
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 4px;
+            background: #00274C;
+            transition: width 0.4s ease;
         }
 
         .votes {
             min-width: 2.5rem;
             text-align: right;
             font-variant-numeric: tabular-nums;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.95rem;
-            color: #a78bfa;
+            color: #00274C;
         }
 
         .empty {
             text-align: center;
-            padding: 3rem 1rem;
-            color: #475569;
-        }
-
-        .empty-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.75rem;
-            opacity: 0.5;
+            padding: 2.5rem 1rem;
+            color: #666;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
 
         .footer {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            margin-top: 1.5rem;
-            color: #475569;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ddd;
+            color: #666;
             font-size: 0.85rem;
-        }
-
-        .footer .pill {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 0.35rem 0.9rem;
-            border-radius: 20px;
         }
 
         @media (max-width: 500px) {
@@ -227,47 +242,59 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Vote</h1>
-            <p>Add options and vote for your favorites</p>
-        </div>
+    <nav class="topbar" aria-label="Site header">
+        <span class="topbar-title">Vote</span>
+    </nav>
+
+    <main class="container">
+        <h1>Cast Your Vote</h1>
+        <p class="subtitle">Add options and vote for your favorites.</p>
 
         <div class="card">
+            <label class="form-label" for="username-input">Add a new option</label>
             <form class="add-form" action="/add" method="post">
-                <input type="text" name="username" placeholder="Your name" required>
-                <input type="text" name="name" placeholder="New option" required>
+                <input id="username-input" type="text" name="username" placeholder="Your name" required aria-label="Your name">
+                <input type="text" name="name" placeholder="Option name" required aria-label="Option to add">
                 <button type="submit" class="btn-add">Add</button>
             </form>
         </div>
 
         {% if options %}
+            <p class="options-header">Results</p>
             {% for opt in options %}
             <div class="option">
-                <span class="rank {{ 'gold' if loop.index == 1 else 'silver' if loop.index == 2 else 'bronze' if loop.index == 3 else '' }}">{{ loop.index }}</span>
+                <span class="rank {{ '' if loop.index <= 3 else 'plain' }}" aria-label="Rank {{ loop.index }}">{{ loop.index }}</span>
                 <div class="option-info">
                     <div class="option-name">{{ opt.name }}</div>
                     <div class="option-by">by {{ opt.added_by }}</div>
                 </div>
-                <div class="bar-bg">
+                <div class="bar-bg" role="progressbar" aria-valuenow="{{ opt.votes }}" aria-valuemin="0" aria-valuemax="{{ total }}">
                     <div class="bar-fill" style="width: {{ (opt.votes / total * 100) if total else 0 }}%"></div>
                 </div>
                 <span class="votes">{{ opt.votes }}</span>
                 <form action="/vote/{{ opt.name }}" method="post" style="margin:0">
-                    <button type="submit" class="btn-vote">Vote</button>
+                    <button type="submit" class="btn-vote" aria-label="Vote for {{ opt.name }}">Vote</button>
                 </form>
             </div>
             {% endfor %}
         {% else %}
-            <div class="card empty">
-                <div class="empty-icon">&#9898;</div>
+            <div class="empty">
                 <p>No options yet — add one above to get started.</p>
             </div>
         {% endif %}
 
         <div class="footer">
-            <span class="pill">{{ total }} vote{{ "s" if total != 1 else "" }} cast</span>
+            <span>{{ total }} vote{{ "s" if total != 1 else "" }} cast</span>
         </div>
-    </div>
+    </main>
+
+    <script>
+        const nameInput = document.querySelector('input[name="username"]');
+        const saved = localStorage.getItem('vote_username');
+        if (saved) nameInput.value = saved;
+        nameInput.closest('form').addEventListener('submit', () => {
+            localStorage.setItem('vote_username', nameInput.value.trim());
+        });
+    </script>
 </body>
 </html>
