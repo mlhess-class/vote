@@ -70,19 +70,10 @@ def vote(name):
     return redirect(url_for("index"))
 
 
-@app.route("/reset", methods=["POST"])
-def reset():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM options")
-    conn.commit()
-    cur.close()
-    conn.close()
-    return redirect(url_for("index"))
 
-
-with app.app_context():
-    init_db()
+if not os.environ.get("TESTING"):
+    with app.app_context():
+        init_db()
 
 if __name__ == "__main__":
     app.run(debug=True)

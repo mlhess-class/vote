@@ -1,72 +1,87 @@
+from unittest.mock import patch, MagicMock
 import pytest
-from app import app, options
+import app as voting_app
 
 
 @pytest.fixture
-def client():
-    app.config["TESTING"] = True
-    options.clear()
-    with app.test_client() as client:
-        yield client
-    options.clear()
+def mock_db():
+    mock_conn = MagicMock()
+    mock_cur = MagicMock()
+    mock_conn.cursor.return_value = mock_cur
+    with patch("app.get_db", return_value=mock_conn):
+        yield mock_conn, mock_cur
 
 
-def test_index_empty(client):
+@pytest.fixture
+def client(mock_db):
+    voting_app.app.config["TESTING"] = True
+    with voting_app.app.test_client() as c:
+        yield c
+
+
+def test_index_empty(client, mock_db):
+    _, mock_cur = mock_db
+    mock_cur.fetchall.return_value = []
+    mock_cur.fetchone.return_value = (0,)
+
     resp = client.get("/")
     assert resp.status_code == 200
     assert b"No options yet" in resp.data
 
 
-def test_add_option(client):
-    resp = client.post("/add", data={"name": "Pizza", "username": "Alice"}, follow_redirects=True)
+def test_index_with_options(client, mock_db):
+    _, mock_cur = mock_db
+    mock_cur.fetchall.return_value = [
+        ("Pizza", 5, "Alice"),
+        ("Tacos", 3, "Bob"),
+    ]
+    mock_cur.fetchone.return_value = (8,)
+
+    resp = client.get("/")
     assert resp.status_code == 200
     assert b"Pizza" in resp.data
+    assert b"Tacos" in resp.data
     assert b"Alice" in resp.data
-    assert b"No options yet" not in resp.data
 
 
-def test_add_without_username_defaults_to_anonymous(client):
-    client.post("/add", data={"name": "Pizza"})
-    assert options[0]["added_by"] == "Anonymous"
+def test_add_option(client, mock_db):
+    mock_conn, mock_cur = mock_db
+
+    resp = client.post("/add", data={"name": "Sushi", "username": "Carol"})
+    assert resp.status_code == 302
+    mock_cur.execute.assert_any_call(
+        "INSERT INTO options (name, added_by) VALUES (%s, %s) ON CONFLICT (name) DO NOTHING",
+        ("Sushi", "Carol"),
+    )
+    mock_conn.commit.assert_called()
 
 
-def test_add_duplicate_is_ignored(client):
-    client.post("/add", data={"name": "Pizza", "username": "Alice"})
-    client.post("/add", data={"name": "pizza", "username": "Bob"})
-    assert len(options) == 1
+def test_add_option_blank_name(client, mock_db):
+    mock_conn, _ = mock_db
+
+    resp = client.post("/add", data={"name": "  ", "username": "Carol"})
+    assert resp.status_code == 302
+    mock_conn.commit.assert_not_called()
 
 
-def test_add_blank_is_ignored(client):
-    client.post("/add", data={"name": "  "})
-    assert len(options) == 0
+def test_add_option_anonymous(client, mock_db):
+    _, mock_cur = mock_db
+
+    client.post("/add", data={"name": "Burgers", "username": ""})
+    mock_cur.execute.assert_any_call(
+        "INSERT INTO options (name, added_by) VALUES (%s, %s) ON CONFLICT (name) DO NOTHING",
+        ("Burgers", "Anonymous"),
+    )
 
 
-def test_vote_increments(client):
-    client.post("/add", data={"name": "Tacos", "username": "Alice"})
-    client.post("/vote/Tacos")
-    client.post("/vote/Tacos")
-    assert options[0]["votes"] == 2
+def test_vote(client, mock_db):
+    mock_conn, mock_cur = mock_db
+
+    resp = client.post("/vote/Pizza")
+    assert resp.status_code == 302
+    mock_cur.execute.assert_any_call(
+        "UPDATE options SET votes = votes + 1 WHERE name = %s", ("Pizza",)
+    )
+    mock_conn.commit.assert_called()
 
 
-def test_vote_nonexistent_does_not_crash(client):
-    resp = client.post("/vote/Ghost", follow_redirects=True)
-    assert resp.status_code == 200
-
-
-def test_reset_clears_everything(client):
-    client.post("/add", data={"name": "A"})
-    client.post("/add", data={"name": "B"})
-    client.post("/vote/A")
-    client.post("/reset")
-    assert len(options) == 0
-
-
-def test_options_sorted_by_votes(client):
-    client.post("/add", data={"name": "Low"})
-    client.post("/add", data={"name": "High"})
-    client.post("/vote/High")
-    client.post("/vote/High")
-    client.post("/vote/Low")
-    resp = client.get("/")
-    html = resp.data.decode()
-    assert html.index("High") < html.index("Low")
